@@ -70,11 +70,13 @@ spec:
           sh """
             rm -rf $MANIFEST_DIR
             git clone $MANIFEST_REPO $MANIFEST_DIR
-            cd $MANIFEST_DIR/k8s
-            sed -i 's|image: .*|image: '"$REGISTRY/$IMAGE:$TAG"'|' demo-app.yaml
+
+            # Update the correct deployment YAML
+            sed -i 's|image: .*|image: $REGISTRY/$IMAGE:$TAG|' $MANIFEST_DIR/k8s/50-demo-app.yaml
 
             git config user.email "ci@example.com"
             git config user.name "jenkins-ci"
+            cd $MANIFEST_DIR
             git add .
             git commit -m "Deploy image $REGISTRY/$IMAGE:$TAG" || true
             git push https://$GIT_USER:$GIT_PASS@github.com/Tanmoy91/demo-app-manifests.git main
@@ -82,5 +84,6 @@ spec:
         }
       }
     }
+
   }
 }
