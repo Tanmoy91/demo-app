@@ -36,7 +36,7 @@ spec:
       - name: kaniko
         image: gcr.io/kaniko-project/executor:latest
         args:
-        - "--dockerfile=/workspace/Dockerfile"
+        - "--dockerfile=Dockerfile"
         - "--context=git://github.com/Tanmoy91/demo-app.git#refs/heads/main"
         - "--destination=${REGISTRY}/${IMAGE}:${TAG}"
         - "--insecure"
