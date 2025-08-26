@@ -2,11 +2,12 @@ pipeline {
   agent any
 
   environment {
-    REGISTRY = "docker.io/tanmoyjames"  // 🔁 Replace
-    IMAGE = "demo-app"
-    TAG = "${env.BUILD_NUMBER}"
-    MANIFEST_REPO = "https://github.com/Tanmoy91/demo-app-manifests.git"  // 🔁 Replace
-    MANIFEST_DIR = "manifest-tmp"
+    REGISTRY      = "docker.io/tanmoyjames"
+    IMAGE         = "demo-app"
+    TAG           = "${env.BUILD_NUMBER}"
+    MANIFEST_REPO = "https://github.com/Tanmoy91/demo-app-manifests.git"
+    MANIFEST_DIR  = "manifest-tmp"
+    NAMESPACE     = "cicd"
   }
 
   stages {
@@ -17,13 +18,47 @@ pipeline {
       }
     }
 
-    stage('Build & Push Image') {
+    stage('Build & Push Image with Kaniko') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+        script {
+          // Generate a temporary Kaniko job manifest with the right image tag
+          writeFile file: 'kaniko-job.yaml', text: """
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kaniko-build
+  namespace: ${NAMESPACE}
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      containers:
+      - name: kaniko
+        image: gcr.io/kaniko-project/executor:latest
+        args:
+        - "--dockerfile=/workspace/Dockerfile"
+        - "--context=git://github.com/Tanmoy91/demo-app.git#refs/heads/main"
+        - "--destination=${REGISTRY}/${IMAGE}:${TAG}"
+        - "--insecure"
+        - "--skip-tls-verify"
+        volumeMounts:
+        - name: docker-config
+          mountPath: /kaniko/.docker/
+      restartPolicy: Never
+      volumes:
+      - name: docker-config
+        secret:
+          secretName: regcred
+          items:
+          - key: .dockerconfigjson
+            path: config.json
+"""
+
+          // Delete any previous job & create a new one
           sh """
-            docker build -t $REGISTRY/$IMAGE:$TAG .
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push $REGISTRY/$IMAGE:$TAG
+            kubectl delete job kaniko-build -n ${NAMESPACE} --ignore-not-found=true
+            kubectl apply -f kaniko-job.yaml -n ${NAMESPACE}
+            kubectl wait --for=condition=complete job/kaniko-build -n ${NAMESPACE} --timeout=300s
           """
         }
       }
@@ -41,12 +76,11 @@ pipeline {
             git config user.email "ci@example.com"
             git config user.name "jenkins-ci"
             git add .
-            git commit -m "Deploy image $REGISTRY/$IMAGE:$TAG"
-            git push https://$GIT_USER:$GIT_PASS@github.com/<your-github-username>/demo-app-manifests.git main
+            git commit -m "Deploy image $REGISTRY/$IMAGE:$TAG" || true
+            git push https://$GIT_USER:$GIT_PASS@github.com/Tanmoy91/demo-app-manifests.git main
           """
         }
       }
     }
   }
 }
-
