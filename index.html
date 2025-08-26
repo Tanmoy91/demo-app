@@ -370,6 +370,25 @@
             font-size: 1.2rem;
             margin-bottom: 10px;
         }
+        
+        /* Workflow Diagram Section */
+        .workflow {
+            padding: 100px 0;
+            background-color: var(--darker);
+            text-align: left;
+        }
+
+        .workflow pre {
+            background: var(--dark);
+            color: var(--light);
+            padding: 2rem;
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.4;
+        }
+
 
         /* Contact Section */
         .contact {
@@ -609,7 +628,6 @@
     </style>
 </head>
 <body>
-    <!-- Header & Navigation -->
     <header>
         <div class="container">
             <nav>
@@ -628,7 +646,6 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
     <section class="hero">
         <div class="container">
             <div class="hero-content">
@@ -643,7 +660,6 @@
         <img src="https://images.unsplash.com/photo-1535223289827-42f1e9919769?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80" alt="DevOps Illustration" class="hero-image">
     </section>
 
-    <!-- Skills Section -->
     <section class="skills" id="skills">
         <div class="container">
             <div class="section-title">
@@ -697,7 +713,6 @@
         </div>
     </section>
 
-    <!-- Projects Section -->
     <section class="projects" id="projects">
         <div class="container">
             <div class="section-title">
@@ -745,7 +760,76 @@
         </div>
     </section>
 
-    <!-- Experience Section -->
+    <section class="workflow">
+        <div class="container">
+            <div class="section-title">
+                <h2>End-to-End CI/CD Workflow</h2>
+                <p>This diagram illustrates the automated GitOps workflow for my projects</p>
+            </div>
+            <pre><code>+----------------+
+| Developer      |
+| Tanmoy         |
++----------------+
+      |
+      | 1. Code change pushed
+      |    (e.g., update index.html)
+      V
++----------------+
+| Git Repository |
+| (demo-app)     |
++----------------+
+      |
+      | 2. Webhook triggers
+      V
++----------------+
+| Jenkins        |
+| (CI Pipeline)  |
++----------------+
+      |
+      | 3. a) Builds Docker image
+      |    b) Pushes image to Docker Hub
+      |    c) Updates manifest with new image tag
+      |       (e.g., image: tanmoyjames/demo-app:11)
+      V
++----------------+--------------------------+
+| Git Repository |                          |
+| (manifests)    |                          |
+| demo-app-      | 4. ArgoCD detects the    | 
+| manifests      |    change in manifests   |
++----------------+                          |
+      |                                     |
+      | (Source of Truth)                   |
+      V                                     |
++----------------+                          |
+| ArgoCD         | --------------------------+
+| (CD Tool)      |
++----------------+
+      |
+      | 5. Synchronizes cluster state with Git
+      V
++----------------+
+| Kubernetes     |
+| Cluster        |
++----------------+
+      |
+      | 6. Deploys updated
+      |    `demo-app` pods
+      V
++----------------+---------------------+
+| Deployed App   | Other Cluster       |
+| (demo-app)     | Services            |
++----------------+---------------------+
+| (Monitored by  | - **Keycloak** |
+| Prometheus &   |   (Authentication)  |
+| Grafana)       | - **Prometheus** |
+|                |   (Metrics)         |
+|                | - **Grafana** |
+|                |   (Dashboards)      |
++----------------+---------------------+
+</code></pre>
+        </div>
+    </section>
+
     <section class="experience">
         <div class="container">
             <div class="section-title">
@@ -778,7 +862,6 @@
         </div>
     </section>
 
-    <!-- Contact Section -->
     <section class="contact" id="contact">
         <div class="container">
             <div class="section-title">
@@ -836,7 +919,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
         <div class="container">
             <div class="footer-content">
